@@ -1,62 +1,153 @@
+import firestore  from '@react-native-firebase/firestore';
+
+// Get all admin tasks
 export const getAllAdminTasks = async (createdBy: string) => {
     try {
-        // get all takes where createdBy is equal to createdBy ...
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const tasksSnapshot = await firestore()
+            .collection('tasks')
+            .where('createdBy', '==', createdBy)
+            .get();
+        
+        const tasks = tasksSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        return tasks;
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
+// Get all member tasks
 export const getAllMemberTasks = async (assignTo: string) => {
     try {
-        // get all takes where assignTo is equal to assignTo ...
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const tasksSnapshot = await firestore()
+            .collection('tasks')
+            .where('assignTo', '==', assignTo)
+            .get();
+        
+        const tasks = tasksSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        return tasks;
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
-export const createNewTask = async (createdBy: string, assignTo: string, data:any) => {
+
+// Create a new task
+export const createNewTask = async (createdBy: string, assignTo: string, data: any) => {
     try {
-        // create new task and store the data in {...data,createdBy, assignTo}
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const newTask = {
+            ...data,
+            createdBy,
+            assignTo,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+        };
+
+        const taskRef = await firestore().collection('tasks').add(newTask);
+        
+        return { id: taskRef.id, ...newTask };
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
-export const editTask = async (taskId: string, assignTo: string, data:any) => {
+
+// Edit an existing task
+export const editTask = async (taskId: string, assignTo: string, data: any) => {
     try {
-        // Edit the task where taskId is equal to taskId and store the data in {...oldData, ...data, assignTo}
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const taskRef = firestore().collection('tasks').doc(taskId);
+        const taskSnapshot = await taskRef.get();
+
+        if (!taskSnapshot.exists) {
+            throw new Error('Task not found');
+        }
+
+        const updatedData = {
+            ...taskSnapshot.data(),
+            ...data,
+            assignTo,
+            updatedAt: firestore.FieldValue.serverTimestamp(),
+        };
+
+        await taskRef.update(updatedData);
+
+        return { id: taskId, ...updatedData };
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
+// Delete a task
 export const deleteTask = async (taskId: string) => {
     try {
-        // delete the task where taskId = taskId
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const taskRef = firestore().collection('tasks').doc(taskId);
+        await taskRef.delete();
+        
+        return { message: 'Task deleted successfully' };
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
+// Get all invites
 export const getAllInvites = async (inviteTo: string) => {
     try {
-        // get all invites where inviteTo = inviteTo
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const invitesSnapshot = await firestore()
+            .collection('invites')
+            .where('inviteTo', '==', inviteTo)
+            .get();
+        
+        const invites = invitesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        return invites;
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
+// Create a new invite
 export const createInvite = async (invitedBy: string, inviteTo: string) => {
     try {
-        // create new invite and store the data in {...data,invitedBy, inviteTo}
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const newInvite = {
+            invitedBy,
+            inviteTo,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+        };
+
+        const inviteRef = await firestore().collection('invites').add(newInvite);
+        
+        return { id: inviteRef.id, ...newInvite };
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
-export const acceptInvite = async (inviteId:string, invitedBy: string, inviteTo: string) => {
+
+// Accept an invite
+export const acceptInvite = async (inviteId: string, invitedBy: string, inviteTo: string) => {
     try {
-        // delete the invite where invitedId = invitedId and store the inviteTo in the invitedBy user collection members
-    } catch (error:any) {
-        throw new Error(`FireStore Error: ${error}`)
+        const inviteRef = firestore().collection('invites').doc(inviteId);
+        const inviteSnapshot = await inviteRef.get();
+
+        if (!inviteSnapshot.exists) {
+            throw new Error('Invite not found');
+        }
+
+        // Delete the invite
+        await inviteRef.delete();
+
+        // Add the invitee to the invitedBy user's members list (assuming members is a subcollection)
+        const userRef = firestore().collection('users').doc(invitedBy).collection('members');
+        await userRef.add({ memberId: inviteTo, addedAt: firestore.FieldValue.serverTimestamp() });
+
+        return { message: 'Invite accepted and user added to members list' };
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
     }
 };
-
-
-// there and 3 collection 
-// 1) users 
-// 2) tasks
-// 3) invites
