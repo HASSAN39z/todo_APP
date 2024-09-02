@@ -8,14 +8,12 @@ import React, {
   ReactNode,
   useEffect,
 } from 'react';
-// import { WEB_CLIENT_ID } from '@env';
 
 interface User {
   jobSearchToken: number;
   uid: string;
   email: string | null;
   displayName: string | null;
-  photoURL: string | null; // Added photoURL
 }
 
 interface AuthContextType {
@@ -23,9 +21,9 @@ interface AuthContextType {
   currentUser: User | null;
   handleGoogleSignIn: () => Promise<any>;
   logout: () => void;
-  loading: boolean;
-  setResults: any;
-  results: any;
+  loading:boolean;
+  setResults:any;
+  results:any;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -33,19 +31,22 @@ const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   handleGoogleSignIn: async () => { },
   logout: () => { },
-  loading: false,
-  setResults: () => { },
-  results: "",
+  loading:false,
+  setResults:() => { },
+  results:"",
 });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [loading, setLoading] = useState(false);
-  const [initializing, setInitializing] = useState(true);
+  const [initializing, setInitializing] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [results, setResults] = useState<string>("");
 
   useEffect(() => {
-    GoogleSignin.configure({ webClientId: "777238116568-i8shk8btbfofb10bl3bhcc0ir7ljiau1.apps.googleusercontent.com" })
+    GoogleSignin.configure({
+      webClientId:
+        '305484718925-umeuebrrfssmr6ujhhdjr887j0pj8t26.apps.googleusercontent.com',
+    });
   }, []);
 
   useEffect(() => {
@@ -53,21 +54,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => subscriber();
   }, []);
 
+  
+
   const onAuthStateChanged = async (authUser: any) => {
-    setLoading(true);
+
+    setLoading(true)
     if (authUser) {
       const fireStoreUser = await getUserFromFireStore(authUser?.uid);
       if (!fireStoreUser) {
         await addUserToFireStore(authUser);
       }
 
-      setCurrentUser({
-        uid: authUser.uid,
-        email: authUser.email,
-        displayName: authUser.displayName,
-        photoURL: authUser.photoURL, // Set photoURL
-        jobSearchToken: 0, // Initialize jobSearchToken if needed
-      });
+      setCurrentUser(authUser);
       setLoading(false);
     } else {
       setCurrentUser(null);
@@ -79,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const getUserFromFireStore = async (userId: any) => {
     try {
-      const userDoc = await firestore().collection('Users').doc(userId).get();
+      const userDoc = await firestore().collection('users').doc(userId).get();
       return userDoc.exists ? userDoc.data() : null;
     } catch (error) {
       console.error('Error getting user from Firestore:', error);
@@ -89,12 +87,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const addUserToFireStore = async (authUser: any) => {
     try {
-      const { uid, email, displayName, photoURL } = authUser;
-      await firestore().collection('Users').doc(uid).set({
+      const { uid, email, displayName } = authUser;
+      await firestore().collection('users').doc(uid).set({
         uid,
         email,
         displayName,
-        photoURL, // Store photoURL
         createdAt: new Date(),
       });
     } catch (error) {
@@ -106,24 +103,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setLoading(true);
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      const { idToken } = await GoogleSignin.signIn();
+      const response = await GoogleSignin.signIn();
+  
+      const { idToken }:any = response.data;
+  
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
       return auth().signInWithCredential(googleCredential);
     } catch (error) {
+      console.error("Google Sign-In Error:", error);
       setLoading(false);
     }
   };
+  
 
   const logout = async () => {
     try {
-      setCurrentUser(null);
+      setCurrentUser(null)
       await auth().signOut();
       await GoogleSignin.revokeAccess();
       console.log('Logout successful');
-    } catch (error: any) {
+    } catch (error:any) {
       console.error('Error logging out:', error.message);
     }
   };
+
 
   const value = {
     initializing,

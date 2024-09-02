@@ -6,9 +6,9 @@ import { useAuth } from '@context';
 const LoginScreen = () => {
   const { handleGoogleSignIn } = useAuth();
   return (
-    <TouchableOpacity onPress={handleGoogleSignIn} style={{flex:1, backgroundColor:"black", justifyContent:"center",paddingHorizontal:20}}>
-      <MyButton onPress={()=>{}} title='Continue with Google'/>
-    </TouchableOpacity>
+    <View style={{flex:1, backgroundColor:"black", justifyContent:"center",paddingHorizontal:20}}>
+      <MyButton onPress={()=>{handleGoogleSignIn()}} title='Continue with Google'/>
+    </View>
   )
 }
 

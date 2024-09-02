@@ -1,4 +1,4 @@
-package com.todo.list.mobile.app
+package com.todo.list.mobile.app.naeem
 
 import android.app.Application
 import com.facebook.react.PackageList
