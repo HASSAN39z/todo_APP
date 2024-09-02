@@ -1,40 +1,45 @@
-import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import Modal from 'react-native-modal';
+import { MY_COLORS } from '@constants';
+import React, { ReactNode } from 'react';
+import { View, Text, Button, StyleSheet, Modal, TouchableWithoutFeedback } from 'react-native';
 
-const PopupModal = () => {
-  const [isModalVisible, setModalVisible] = useState(false);
+interface PopupModalProps {
+  isVisible: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
-
+const PopupModal: React.FC<PopupModalProps> = ({ isVisible, onClose, children }) => {
   return (
-    <Modal isVisible={isModalVisible} onBackdropPress={toggleModal} style={styles.modal} >
-      <View style={styles.modalContent}>
-        <Text style={styles.modalText}>This is a modal!</Text>
-        <Button title="Close" onPress={toggleModal} />
-      </View>
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={isVisible}
+      onRequestClose={onClose}
+    >
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {children}
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modal: {
+  modalContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: 'white',
-    padding: 22,
-    borderRadius: 4,
-    width: 300,
-    height: 200,
+    backgroundColor: MY_COLORS.PRIMARY,
+    padding: 12,
+    borderRadius: 8,
+    width: '95%',
     alignItems: 'center',
-  },
-  modalText: {
-    fontSize: 18,
-    marginBottom: 15,
   },
 });
 
