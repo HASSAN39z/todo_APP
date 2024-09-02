@@ -9,10 +9,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 const App = () => {
   return (
-      <AuthProvider>
-        {/* <DashboardScreen /> */}
-          <AuthNav />
-      </AuthProvider>
+    <AuthProvider>
+      {/* <DashboardScreen /> */}
+      <AuthNav />
+    </AuthProvider>
   )
 }
 export default App

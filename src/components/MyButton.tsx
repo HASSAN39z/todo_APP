@@ -26,7 +26,7 @@ const MyButton: React.FC<MyButtonProps> = ({
   return (
     <TouchableOpacity style={[styles.button, LAYOUT.SHADOW, style]} onPress={onPress}>
       {iconPath && <Image source={iconPath} />}
-      <MyText p color={btnType === 'white' ? 'black' : 'white'}>
+      <MyText cp color={btnType === 'white' ? 'black' : 'white'}>
         {title}
       </MyText>
     </TouchableOpacity>
@@ -45,7 +45,7 @@ const myStyles = (btnType: string, btnWidth: any = "100%") =>
       marginVertical: 10,
       height: hp('6%'), // Adjust height as needed
       backgroundColor:
-        btnType === 'white' ? "white" : MY_COLORS.GREEN,
+        btnType === 'white' ? "white" : MY_COLORS.PRIMARY,
     },
   });
 
