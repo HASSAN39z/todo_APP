@@ -10250,9 +10250,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"todoApp@workspace:.":
+"todo_list@workspace:.":
   version: 0.0.0-use.local
-  resolution: "todoApp@workspace:."
+  resolution: "todo_list@workspace:."
   dependencies:
     "@babel/core": ^7.20.0
     "@babel/preset-env": ^7.20.0

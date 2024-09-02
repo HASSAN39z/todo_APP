@@ -78,9 +78,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.todo.list.mobile.app"
+    namespace "com.todo.list.mobile.app.naeem"
     defaultConfig {
-        applicationId "com.todo.list.mobile.app"
+        applicationId "com.todo.list.mobile.app.naeem"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
