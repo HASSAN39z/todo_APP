@@ -1,4 +1,5 @@
 import firestore  from '@react-native-firebase/firestore';
+import { showToast } from '@utils';
 
 // Get all admin tasks
 export const getAllAdminTasks = async (createdBy: string) => {
@@ -115,6 +116,18 @@ export const getAllInvites = async (inviteTo: string) => {
 // Create a new invite
 export const createInvite = async (invitedBy: string, inviteTo: string) => {
     try {
+        // Check if the invited user exists
+        const userSnapshot = await firestore()
+            .collection('users')
+            .doc(inviteTo)
+            .get();
+
+        if (!userSnapshot.exists) {
+            showToast('User not found');
+            return null; // Return null or handle as needed if user does not exist
+        }
+
+        // If the user exists, create a new invite
         const newInvite = {
             invitedBy,
             inviteTo,

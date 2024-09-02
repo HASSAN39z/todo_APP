@@ -44,7 +44,7 @@ const myStyles = () =>
       borderWidth: 1,
       borderColor: MY_COLORS.TXT_DIM,
       borderRadius: 12,
-      color: 'black',
+      color: 'white',
       marginTop: 2,
     },
     txt: { marginTop: 8 },

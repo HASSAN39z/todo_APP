@@ -1,8 +1,11 @@
 import * as React from 'react';
+import { LoginScreen } from '@screens';
 import { useAuth } from '../../context';
 import { LoadingScreen } from '@components';
 import BottomTabNavigation from '../bottomTab';
-import { LoginScreen } from '@screens';
+
+
+
 
 const App = () => {
   const { currentUser, initializing, loading } = useAuth();

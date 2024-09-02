@@ -33,6 +33,6 @@
       ],
     },
     "strict": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "Node16"
   }
 }
