@@ -24,6 +24,8 @@ interface AuthContextType {
   loading:boolean;
   setResults:any;
   results:any;
+  isAdmin:any;
+  setIsAdmin:any;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -34,12 +36,16 @@ const AuthContext = createContext<AuthContextType>({
   loading:false,
   setResults:() => { },
   results:"",
+  setIsAdmin:() => { },
+  isAdmin:true,
+
 });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(true);
   const [results, setResults] = useState<string>("");
 
   useEffect(() => {
@@ -136,7 +142,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logout,
     loading,
     results,
-    setResults
+    setResults,
+    isAdmin,
+    setIsAdmin
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

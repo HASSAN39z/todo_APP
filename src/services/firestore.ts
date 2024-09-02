@@ -164,3 +164,22 @@ export const acceptInvite = async (inviteId: string, invitedBy: string, inviteTo
         throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
+
+export const deleteInvite = async (inviteId: string) => {
+    try {
+        const inviteRef = firestore().collection('invites').doc(inviteId);
+        const inviteSnapshot = await inviteRef.get();
+
+        if (!inviteSnapshot.exists) {
+            throw new Error('Invite not found');
+        }
+
+        // Delete the invite
+        await inviteRef.delete();
+
+        return { message: 'Invite successfully deleted' };
+    } catch (error: any) {
+        throw new Error(`Firestore Error: ${error.message}`);
+    }
+};

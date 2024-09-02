@@ -7,7 +7,7 @@ import { adjust, hp, wp } from '@utils';
 interface MyButtonProps {
   onPress: () => void;
   title: string;
-  btnType?: 'white' | 'secondary';
+  btnType?: 'primary' | 'secondary';
   iconPath?: any;
   secondaryColor?: string;
   style?: ViewStyle;
@@ -17,7 +17,7 @@ interface MyButtonProps {
 const MyButton: React.FC<MyButtonProps> = ({
   onPress,
   title,
-  btnType = 'white',
+  btnType = 'primary',
   iconPath,
   btnWidth,
   style
@@ -26,7 +26,7 @@ const MyButton: React.FC<MyButtonProps> = ({
   return (
     <TouchableOpacity style={[styles.button, LAYOUT.SHADOW, style]} onPress={onPress}>
       {iconPath && <Image source={iconPath} />}
-      <MyText cp color={btnType === 'white' ? 'black' : 'white'}>
+      <MyText cp color={btnType === 'primary' ? 'black' : 'white'} bold>
         {title}
       </MyText>
     </TouchableOpacity>
@@ -45,7 +45,10 @@ const myStyles = (btnType: string, btnWidth: any = "100%") =>
       marginVertical: 10,
       height: hp('6%'), // Adjust height as needed
       backgroundColor:
-        btnType === 'white' ? "white" : MY_COLORS.PRIMARY,
+        btnType === 'primary' ? "white" : "transparent",
+      borderWidth:
+        btnType === 'primary' ? 0 : 1,
+      borderColor:"white"
     },
   });
 
