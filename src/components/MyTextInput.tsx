@@ -38,7 +38,7 @@ const myStyles = () =>
   StyleSheet.create({
     input: {
       width: '100%',
-      height: hp('7%'),
+      height: hp('6%'),
       paddingHorizontal: 10,
       justifyContent: 'center',
       borderWidth: 1,
@@ -46,6 +46,7 @@ const myStyles = () =>
       borderRadius: 8,
       color: 'white',
       marginTop: 2,
+      fontSize:adjust(14)
     },
     txt: { marginTop: 8 },
   });

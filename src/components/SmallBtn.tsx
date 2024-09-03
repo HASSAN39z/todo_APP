@@ -27,6 +27,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingVertical: 8, paddingHorizontal: 12,
         backgroundColor: 'white',
+        justifyContent:"center",
+        alignItems:"center",
         // Assuming LAYOUT.SHADOW is defined somewhere globally
         // Spread operator used to merge shadow style
         ...LAYOUT.SHADOW,
