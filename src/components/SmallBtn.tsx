@@ -25,8 +25,7 @@ export default SmallBtn;
 const styles = StyleSheet.create({
     button: {
         borderRadius: 8,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
+        paddingVertical: 8, paddingHorizontal: 12,
         backgroundColor: 'white',
         // Assuming LAYOUT.SHADOW is defined somewhere globally
         // Spread operator used to merge shadow style

@@ -94,27 +94,34 @@ export const deleteTask = async (taskId: string) => {
     }
 };
 
-// Get all invites
-export const getAllInvites = async (inviteTo: string) => {
-    try {
-        const invitesSnapshot = await firestore()
-            .collection('invites')
-            .where('inviteTo', '==', inviteTo)
-            .get();
-        
-        const invites = invitesSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
 
-        return invites;
-    } catch (error: any) {
-        throw new Error(`Firestore Error: ${error.message}`);
-    }
-};
+
+// ======================================
+// ======================================
+
+
+
+// Get all invites
+// export const getAllInvites = async (inviteTo: string) => {
+//     try {
+//         const invitesSnapshot = await firestore()
+//             .collection('invites')
+//             .where('inviteTo', '==', inviteTo)
+//             .get();
+        
+//         const invites = invitesSnapshot.docs.map(doc => ({
+//             id: doc.id,
+//             ...doc.data(),
+//         }));
+
+//         return invites;
+//     } catch (error: any) {
+//         throw new Error(`Firestore Error: ${error.message}`);
+//     }
+// };
 
 // Create a new invite
-export const createInvite = async (invitedBy: string, inviteTo: string) => {
+export const createInvite = async (invitedBy: string, inviteTo: string, createdBy: string) => {
     try {
         // Check if the invited user exists
         const userSnapshot = await firestore()
@@ -124,26 +131,34 @@ export const createInvite = async (invitedBy: string, inviteTo: string) => {
 
         if (!userSnapshot.exists) {
             showToast('User not found');
-            return null; // Return null or handle as needed if user does not exist
+            throw new Error('User not found');
         }
 
-        // If the user exists, create a new invite
+        // Extract user data and ensure 'name' is present
+        const userData = userSnapshot.data();
+        const inviteToUserName = userData?.displayName || 'Unknown'; // Default to 'Unknown' if name is not available
+
+        // Create a new invite
         const newInvite = {
             invitedBy,
             inviteTo,
+            createdBy,
+            inviteToUserName,
             createdAt: firestore.FieldValue.serverTimestamp(),
         };
 
+        // Add the new invite to Firestore
         const inviteRef = await firestore().collection('invites').add(newInvite);
         
         return { id: inviteRef.id, ...newInvite };
     } catch (error: any) {
+        console.error('Firestore Error:', error.message);
         throw new Error(`Firestore Error: ${error.message}`);
     }
 };
 
 // Accept an invite
-export const acceptInvite = async (inviteId: string, invitedBy: string, inviteTo: string) => {
+export const acceptInvite = async (inviteId: string, adminId: string, inviteTo: string, memberName: string) => {
     try {
         const inviteRef = firestore().collection('invites').doc(inviteId);
         const inviteSnapshot = await inviteRef.get();
@@ -155,16 +170,20 @@ export const acceptInvite = async (inviteId: string, invitedBy: string, inviteTo
         // Delete the invite
         await inviteRef.delete();
 
-        // Add the invitee to the invitedBy user's members list (assuming members is a subcollection)
-        const userRef = firestore().collection('users').doc(invitedBy).collection('members');
-        await userRef.add({ memberId: inviteTo, addedAt: firestore.FieldValue.serverTimestamp() });
+        // Add the invitee to the main collection with 'admin' as the key for the person who invited
+        const userRef = firestore().collection('members');
+        await userRef.add({
+            admin: adminId,  // Using 'admin' key
+            memberId: inviteTo,
+            memberName: memberName,
+            addedAt: firestore.FieldValue.serverTimestamp()
+        });
 
         return { message: 'Invite accepted and user added to members list' };
     } catch (error: any) {
         throw new Error(`Firestore Error: ${error.message}`);
     }
 };
-
 
 export const deleteInvite = async (inviteId: string) => {
     try {
@@ -183,3 +202,32 @@ export const deleteInvite = async (inviteId: string) => {
         throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
+export const getAllMembers = async (admin: string) => {
+    try {
+        // Query the members collection where 'admin' field matches the provided admin ID
+        const membersSnapshot = await firestore()
+            .collection('members')
+            .where('admin', '==', admin)
+            .get();
+
+        // Check if the query returned any documents
+        if (membersSnapshot.empty) {
+            console.log('No members found');
+            return []; // Return an empty array if no members are found
+        }
+
+        // Map the documents to an array of member objects
+        const members = membersSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        return members;
+    } catch (error: any) {
+        console.error('Firestore Error:', error.message);
+        throw new Error(`Firestore Error: ${error.message}`);
+    }
+};
+
+

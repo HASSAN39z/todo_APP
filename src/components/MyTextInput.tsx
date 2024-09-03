@@ -43,7 +43,7 @@ const myStyles = () =>
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: MY_COLORS.TXT_DIM,
-      borderRadius: 12,
+      borderRadius: 8,
       color: 'white',
       marginTop: 2,
     },
