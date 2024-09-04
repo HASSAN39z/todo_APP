@@ -1,29 +1,44 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
-import { MyText } from '@components';
-import { MY_COLORS } from '@constants';
-import { wp } from '@utils';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { MyButton, MyText } from '@components';
+import { getAllMembers } from '@services';
+import { useAuth } from '@context';
 
-
-
-interface SelectUserProps {
-    onUserSelect: (val: any) => void;
+interface UserSelectorProps {
+    onUserSelect: (user: any) => void;
 }
 
-const SelectUser: React.FC<SelectUserProps> = ({ onUserSelect }) => {
+const UserSelector: React.FC<UserSelectorProps> = ({ onUserSelect }) => {
+    const [members, setMembers] = useState<any[]>([]);
+    const { currentUser } = useAuth();
+
+    useEffect(() => {
+        const fetchMembers = async () => {
+            if (currentUser) {
+                const fetchedMembers = await getAllMembers(currentUser.uid);
+                console.log("Fetched members:", fetchedMembers);
+                setMembers(fetchedMembers);
+            }
+        };
+
+        fetchMembers();
+    }, [currentUser]);
+
+    console.log("Members in state:", members);
+
     return (
-        <View style={{width:"100%",maxHeight:wp(100)}}>
-        <ScrollView contentContainerStyle={{gap:20}} showsVerticalScrollIndicator={false}>
-            <TouchableOpacity onPress={()=>onUserSelect({name:"naeem",uid:"23235435342"})} style={{backgroundColor:"white", paddingVertical:8,paddingHorizontal:8,borderRadius:8}}>
-                <MyText color='black'>Name: Naeem</MyText>
-                <MyText color='black'>Uid: 243432432432233</MyText>
-            </TouchableOpacity>
-
+        <ScrollView style={{ maxHeight: 200 }}>
+            {members.map((member) => (
+                <MyButton
+                    key={member.id}
+                    title={member.memberName}
+                    onPress={() => onUserSelect({ name: member.memberName, uid: member.memberId })}
+                    btnType='secondary'
+                    style={{ marginBottom: 10 }}
+                />
+            ))}
         </ScrollView>
-        </View>
-    )
-}
+    );
+};
 
-export default SelectUser
-
-const styles = StyleSheet.create({})
+export default UserSelector;

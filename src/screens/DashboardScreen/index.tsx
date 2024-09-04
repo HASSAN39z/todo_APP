@@ -4,35 +4,42 @@ import { MyButton, MyText, PopupModal, SmallBtn } from '@components'
 import { MY_COLORS } from '@constants'
 import { adjust } from '@utils'
 import { ConfirmationContent, Detail, FilterOptions, SelectUser, TaskCard, TaskManagement } from './components'
-import { createNewTask, deleteTask } from '@services'
+import { createNewTask, deleteTask, editTask, getAllMembers } from '@services'
 import { useAuth } from '@context'
 import firestore from '@react-native-firebase/firestore';
 
 
 type TaskType = "title" | "description" | "dueDate" | "priority" | "selectedUser" | "status";
+interface Task { id: string; title: string; description: string; dueDate: string; priority: string; selectedUser: { name: string; uid: string }; status: string; createdBy: string; assignTo: string; }
+
 const DashboardScreen = () => {
 
   const { currentUser } = useAuth()
-  const initialTaskData = { id: "", title: "", description: "", dueDate: "", priority: "High", selectedUser: { name: "", uid: "" }, status: "pending" }
-
+  const initialTaskData: Task = { id: "", title: "", description: "", dueDate: "", priority: "High", selectedUser: { name: "", uid: "" }, status: "pending", createdBy: "", assignTo: "" }
   const [openedModal, setOpenedModal] = useState<false | 'confirmation' | 'detail' | 'filter' | 'task_management' | 'select_user'>(false);
-  const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('high');
+  const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('low');
   const [mode, setMode] = useState<'editing' | 'add_new' | ''>('');
   const [selectedDate, setSelectedDate] = useState<'overdue' | 'upcoming'>('upcoming');
-  const [task, setTask] = useState<any>(initialTaskData);
-  const [allTasks, setAllTasks] = useState<any>([]);
-  const [openedTask, setOpenedTask] = useState(null);
+  const [task, setTask] = useState<Task>(initialTaskData);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [openedTask, setOpenedTask] = useState<Task | null>(null);
+  const [confirmationAction, setConfirmationAction] = useState<'delete' | 'complete' | ''>(''); // New state to track the action
+
 
   useEffect(() => {
+    if (!currentUser?.uid) return;
+
     const unsubscribe = firestore()
       .collection('tasks')
-      .where('createdBy', '==', currentUser?.uid)
+      .where('createdBy', '==', currentUser.uid)
       .onSnapshot(
         (snapshot) => {
+          console.log("Snapshot data id: ", snapshot.docs.map(doc => doc.id));
           const fetchedTasks = snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
-          }));
+          })) as Task[];
+          console.log("getting tasks: ", fetchedTasks);
           setAllTasks(fetchedTasks);
         },
         (error) => {
@@ -40,59 +47,75 @@ const DashboardScreen = () => {
         }
       );
 
-    // Clean up the listener when the component unmounts
     return () => unsubscribe();
   }, [currentUser]);
+
 
   // console.log("&&&&&&&&&&&&&&")
   // console.log(allTasks)
 
-  const handleTask = (key: TaskType, value: string) => {
-    const current_task = { ...task };
-    const new_task = { ...current_task, [key]: value };
-    setTask(new_task);
+  const handleTask = (key: keyof Task, value: string | { name: string; uid: string }) => {
+    setTask(prevTask => ({
+      ...prevTask,
+      [key]: value
+    }));
   };
 
   const handleEdit = () => {
-    setMode("editing")
+    if (openedTask) {
+      setTask(openedTask);
+      setMode("editing");
+      setOpenedModal("task_management");
+    }
   };
-  
+
   const handleDelete = async () => {
     if (openedTask) {
       try {
-        await deleteTask(openedTask.id); // Call deleteTask with the ID of the task to delete
-        setAllTasks((prevTasks: any) => prevTasks.filter((task : any) => task.id !== openedTask.id)); // Update the state
-        setOpenedModal(false); // Close the modal
+        await deleteTask(openedTask.id);
+        setTask(initialTaskData)
+        setMode('')
+        setOpenedModal(false);
       } catch (error) {
         console.error('Failed to delete the task:', error);
-        // Optionally, show an error message to the user
       }
     }
   };
-   
 
-  const handleComplete = () => { };
-  
+  const handleComplete = async () => {
+    if (openedTask) {
+      try {
+        await editTask(openedTask.id, openedTask.assignTo, { ...openedTask, status: 'complete' });
+        setTask(initialTaskData)
+        setMode('')
+        setOpenedModal(false);
+      } catch (error) {
+        console.error('Failed to complete the task:', error);
+      }
+    }
+  };
+
   const handleOpenTask = (taskData: any) => {
     setOpenedTask(taskData);
-    console.log("taskData: ", taskData)
     setOpenedModal("detail")
   };
 
   const handleSave = () => {
-    // Save logic
-    console.log('Task saved:', task);
     if (mode == "add_new") createNewTask(currentUser!.uid, task.selectedUser.uid, task)
-    if (mode == "editing") createNewTask(task.id, task.selectedUser.uid, task)
-    setOpenedModal(false);
-  };
-  const handleCancel = () => {
-    // Cancel logic
+    if (mode == "editing") editTask(task.id, task.selectedUser.uid, task)
     setTask(initialTaskData)
     setMode('')
     setOpenedModal(false);
   };
-
+  const handleCancel = () => {
+    setTask(initialTaskData)
+    setMode('')
+    setOpenedModal(false);
+  };
+  const handleUserSelect = (user: { name: string; uid: string }) => {
+    handleTask("selectedUser", user);
+    setOpenedModal('task_management');
+  };
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 20, backgroundColor: "black", paddingHorizontal: 12, paddingVertical: 20 }}>
@@ -108,15 +131,17 @@ const DashboardScreen = () => {
 
       <MyButton onPress={() => { setMode('add_new'); setOpenedModal('task_management') }} title='New Task' style={{ width: "auto", alignSelf: 'flex-end', paddingHorizontal: 12 }} />
 
-      {allTasks.length > 0 && allTasks.map((task: any,index:number): any => (
-        <TaskCard key={task.id} onPress={() => { handleOpenTask(task) }} title={task.title} subtitle={task.dueDate} priority={task.priority.toLowerCase()} isComplete={task.status === 'complete'} />
+      {allTasks.length > 0 && allTasks.map((task: any, index: number): any => (
+        (selectedPriority == task.priority.toLowerCase() || !selectedPriority) &&
+        <TaskCard key={index} onPress={() => { handleOpenTask(task) }} title={task.title} subtitle={task.dueDate} priority={task.priority.toLowerCase()} isComplete={task.status === 'complete'} />
+
       ))}
 
       <PopupModal isVisible={!!openedModal} onClose={() => { setOpenedModal(false) }}>
-        {openedModal == "confirmation" && <ConfirmationContent message='Are you sure to delete this task' onCancel={() => { setOpenedModal(false) }} onConfirm={() => { }} />}
-        {openedModal === 'detail' && openedTask && (<Detail description={openedTask.description} onComplete={handleComplete} onDelete={handleDelete} onEdit={handleEdit} status={openedTask.status} timestamp={openedTask.dueDate} title={openedTask.title}/>)}
-        {openedModal == "filter" && <FilterOptions onPrioritySelect={(val) => { setSelectedPriority(val) }} onDateSelect={(val) => { setSelectedDate(val) }} />}
-        {openedModal == "select_user" && <SelectUser onUserSelect={(val) => { handleTask("selectedUser", val); setOpenedModal('task_management') }} />}
+        {openedModal == "confirmation" && confirmationAction && <ConfirmationContent message={`Are you sure to ${confirmationAction} this task?`} onCancel={() => { setOpenedModal(false); setConfirmationAction(''); }} onConfirm={() => { if (confirmationAction === 'delete') { handleDelete(); } else if (confirmationAction === 'complete') { handleComplete(); } setConfirmationAction(''); }} />}
+        {openedModal === 'detail' && openedTask && (<Detail description={openedTask.description} onComplete={() => { setOpenedModal('confirmation'); setConfirmationAction('complete'); }} onDelete={() => { setOpenedModal('confirmation'); setConfirmationAction('delete'); }} onEdit={handleEdit} status={openedTask.status} timestamp={openedTask.dueDate} title={openedTask.title} />)}
+        {openedModal === "filter" && (<FilterOptions onPrioritySelect={setSelectedPriority} onDateSelect={setSelectedDate} />)}
+        {openedModal == "select_user" && <SelectUser onUserSelect={handleUserSelect} />}
         {openedModal == "task_management" &&
           <TaskManagement
             onTitleChange={(val: string) => handleTask('title', val)}
@@ -130,7 +155,7 @@ const DashboardScreen = () => {
             descriptionValue={task.description}
             dueDateValue={task.dueDate}
             selectedPriority={task.priority}
-            selectedUser={task.selectedUser.name}
+            selectedUser={task.selectedUser}
           />}
       </PopupModal>
     </ScrollView>

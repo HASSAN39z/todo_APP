@@ -1,4 +1,4 @@
-import firestore  from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 import { showToast } from '@utils';
 
 // Get all admin tasks
@@ -8,7 +8,7 @@ export const getAllAdminTasks = async (createdBy: string) => {
             .collection('tasks')
             .where('createdBy', '==', createdBy)
             .get();
-        
+
         const tasks = tasksSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
@@ -27,10 +27,11 @@ export const getAllMemberTasks = async (assignTo: string) => {
             .collection('tasks')
             .where('assignTo', '==', assignTo)
             .get();
-        
+
         const tasks = tasksSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
+
         }));
 
         return tasks;
@@ -42,6 +43,7 @@ export const getAllMemberTasks = async (assignTo: string) => {
 // Create a new task
 export const createNewTask = async (createdBy: string, assignTo: string, data: any) => {
     try {
+        // Create the new task object with initial data
         const newTask = {
             ...data,
             createdBy,
@@ -49,13 +51,19 @@ export const createNewTask = async (createdBy: string, assignTo: string, data: a
             createdAt: firestore.FieldValue.serverTimestamp(),
         };
 
+        // Add the new task to Firestore and get the document reference
         const taskRef = await firestore().collection('tasks').add(newTask);
-        
+
+        // Update Firestore document to include the document ID
+        await taskRef.update({ id: taskRef.id });
+
+        // Return the task object including the ID
         return { id: taskRef.id, ...newTask };
     } catch (error: any) {
         throw new Error(`Firestore Error: ${error.message}`);
     }
 };
+
 
 // Edit an existing task
 export const editTask = async (taskId: string, assignTo: string, data: any) => {
@@ -87,7 +95,7 @@ export const deleteTask = async (taskId: string) => {
     try {
         const taskRef = firestore().collection('tasks').doc(taskId);
         await taskRef.delete();
-        
+
         return { message: 'Task deleted successfully' };
     } catch (error: any) {
         throw new Error(`Firestore Error: ${error.message}`);
@@ -108,7 +116,7 @@ export const deleteTask = async (taskId: string) => {
 //             .collection('invites')
 //             .where('inviteTo', '==', inviteTo)
 //             .get();
-        
+
 //         const invites = invitesSnapshot.docs.map(doc => ({
 //             id: doc.id,
 //             ...doc.data(),
@@ -149,7 +157,7 @@ export const createInvite = async (invitedBy: string, inviteTo: string, createdB
 
         // Add the new invite to Firestore
         const inviteRef = await firestore().collection('invites').add(newInvite);
-        
+
         return { id: inviteRef.id, ...newInvite };
     } catch (error: any) {
         console.error('Firestore Error:', error.message);

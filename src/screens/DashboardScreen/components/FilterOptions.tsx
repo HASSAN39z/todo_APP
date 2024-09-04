@@ -9,7 +9,7 @@ interface FilterOptionsProps {
 }
 
 const FilterOptions: React.FC<FilterOptionsProps> = ({ onPrioritySelect, onDateSelect }) => {
-    const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('high');
+    const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('low');
     const [selectedDate, setSelectedDate] = useState<'overdue' | 'upcoming'>('upcoming');
 
     useEffect(() => {

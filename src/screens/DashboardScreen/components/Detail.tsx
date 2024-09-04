@@ -5,7 +5,7 @@ import { MY_COLORS } from '@constants'; // Adjust the import path based on your 
 
 interface DetailProps {
     title: string;
-    status: 'Completed' | 'Pending';
+    status: 'Completed' | 'Pending' | string;
     timestamp: string;
     description: string;
     onEdit: () => void;
@@ -65,4 +65,4 @@ export default Detail;
 
 
 // To Call it
-{/* <Detail description={description} onComplete={()=>{}} onDelete={()=>{}} onEdit={()=>{}} status='Pending' timestamp='Today At 16:45' title='Do Math Homework' /> */}
+{/* <Detail description={description} onComplete={()=>{}} onDelete={()=>{}} onEdit={()=>{}} status='Pending' timestamp='Today At 16:45' title='Do Math Homework' /> */ }
