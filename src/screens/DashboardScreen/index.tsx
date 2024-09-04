@@ -1,28 +1,82 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { MyButton, MyText, PopupModal, SmallBtn } from '@components'
 import { MY_COLORS } from '@constants'
 import { adjust } from '@utils'
-import { ConfirmationContent, Detail, FilterOptions, TaskCard, TaskManagement } from './components'
+import { ConfirmationContent, Detail, FilterOptions, SelectUser, TaskCard, TaskManagement } from './components'
+import { createNewTask } from '@services'
+import { useAuth } from '@context'
+import firestore from '@react-native-firebase/firestore';
+
+
+type TaskType = "title" | "description" | "dueDate" | "priority" | "selectedUser" | "status";
+
 
 const DashboardScreen = () => {
-  const [openedModal, setOpenedModal] = useState<false | 'confirmation' | 'detail' | 'filter' | 'task_management'>(false);
-  const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('high');
-  const [selectedDate, setSelectedDate] = useState<'overdue' | 'upcoming'>('upcoming');
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [priority, setPriority] = useState('High');
-  const [selectedUser, setSelectedUser] = useState('');
+  const { currentUser } = useAuth()
+  const initialTaskData = { id: "", title: "", description: "", dueDate: "", priority: "High", selectedUser: { name: "", uid: "" }, status: "pending" }
+
+  const [openedModal, setOpenedModal] = useState<false | 'confirmation' | 'detail' | 'filter' | 'task_management' | 'select_user'>(false);
+  const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('high');
+  const [mode, setMode] = useState<'editing' | 'add_new' | ''>('');
+  const [selectedDate, setSelectedDate] = useState<'overdue' | 'upcoming'>('upcoming');
+  const [task, setTask] = useState<any>(initialTaskData);
+  const [allTasks, setAllTasks] = useState<any>([]);
+
+
+  useEffect(() => {
+    const unsubscribe = firestore()
+      .collection('tasks')
+      .where('createdBy', '==', currentUser?.uid)
+      .onSnapshot(
+        (snapshot) => {
+          const fetchedTasks = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setAllTasks(fetchedTasks);
+        },
+        (error) => {
+          console.error(`Firestore Error: ${error.message}`);
+        }
+      );
+
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  // console.log("&&&&&&&&&&&&&&")
+  // console.log(allTasks)
+
+  const handleTask = (key: TaskType, value: string) => {
+    const current_task = { ...task };
+    const new_task = { ...current_task, [key]: value };
+    setTask(new_task);
+  };
+
+  const handleEdit = () => {
+    setMode("editing")
+  };
+  const handleDelete = () => { };
+  const handleComplete = () => { };
+  const handleOpenTask = (taskData: any) => {
+    // {"assignTo": "23235435342", "createdAt": {"nanoseconds": 467000000, "seconds": 1725428757}, "createdBy": "071n4fdAiMPEyzB9cTNlwk2JKql2", "description": "Fayazfrd Faroq ", "dueDate": "15/15/45", "id": "", "priority": "Low", "selectedUser": {"name": "naeem", "uid": "23235435342"}, "status": "pending", "title": "Fayaz"}
+    console.log("taskData: ", taskData)
+    setOpenedModal("detail")
+  };
 
   const handleSave = () => {
     // Save logic
-    console.log('Task saved:', { title, description, dueDate, priority, selectedUser });
+    console.log('Task saved:', task);
+    if (mode == "add_new") createNewTask(currentUser!.uid, task.selectedUser.uid, task)
+    if (mode == "editing") createNewTask(task.id, task.selectedUser.uid, task)
     setOpenedModal(false);
   };
   const handleCancel = () => {
     // Cancel logic
+    setTask(initialTaskData)
+    setMode('')
     setOpenedModal(false);
   };
 
@@ -31,7 +85,7 @@ const DashboardScreen = () => {
     <ScrollView contentContainerStyle={{ flexGrow: 1, gap: 20, backgroundColor: "black", paddingHorizontal: 12, paddingVertical: 20 }}>
 
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <SmallBtn onPress={() => {setOpenedModal("filter") }} title='Filter' />
+        <SmallBtn onPress={() => { setOpenedModal("filter") }} title='Filter' />
         <MyText h4 color='white'>TODO LIST</MyText>
         <View style={{ justifyContent: "center", alignItems: "center" }}>
           <View style={{ width: adjust(42), height: adjust(42), borderRadius: 50, backgroundColor: MY_COLORS.PRIMARY }} />
@@ -39,28 +93,31 @@ const DashboardScreen = () => {
         </View>
       </View>
 
-      <MyButton onPress={() => {setOpenedModal('task_management') }} title='New Task' style={{ width: "auto", alignSelf: 'flex-end', paddingHorizontal: 12 }} />
+      <MyButton onPress={() => { setMode('add_new'); setOpenedModal('task_management') }} title='New Task' style={{ width: "auto", alignSelf: 'flex-end', paddingHorizontal: 12 }} />
 
+      {allTasks.length > 0 && allTasks.map((task: any,index:number): any => (
+        <TaskCard key={index} onPress={() => { handleOpenTask(task) }} title={task.title} subtitle={task.dueDate} priority={task.priority.toLowerCase()} isComplete={task.status === 'complete'} />
+      ))}
 
-      <TaskCard onPress={() => {setOpenedModal("detail")}} title='Do Math Homework' subtitle='Today At 16:45' priority='low' isComplete={true} />
-
-      <PopupModal isVisible={!!openedModal} onClose={() => {setOpenedModal(false) }}>
-        {openedModal == "confirmation" && <ConfirmationContent message='Are you sure to delete this task' onCancel={() => {setOpenedModal(false)}} onConfirm={() => { }} />}
-        {openedModal == "detail" && <Detail description={"description"} onComplete={() => {setOpenedModal(false) }} onDelete={() => { }} onEdit={() => { }} status='Pending' timestamp='Today At 16:45' title='Do Math Homework' />}
+      <PopupModal isVisible={!!openedModal} onClose={() => { setOpenedModal(false) }}>
+        {openedModal == "confirmation" && <ConfirmationContent message='Are you sure to delete this task' onCancel={() => { setOpenedModal(false) }} onConfirm={() => { }} />}
+        {openedModal == "detail" && <Detail description={"description"} onComplete={() => { handleComplete() }} onDelete={() => { handleDelete() }} onEdit={() => { handleEdit() }} status='Pending' timestamp='Today At 16:45' title='Do Math Homework' />}
         {openedModal == "filter" && <FilterOptions onPrioritySelect={(val) => { setSelectedPriority(val) }} onDateSelect={(val) => { setSelectedDate(val) }} />}
+        {openedModal == "select_user" && <SelectUser onUserSelect={(val) => { handleTask("selectedUser", val); setOpenedModal('task_management') }} />}
         {openedModal == "task_management" &&
           <TaskManagement
-            onTitleChange={(val: string) => setTitle(val)}
-            onDescriptionChange={(val: string) => setDescription(val)}
-            onDueDateChange={(val: string) => setDueDate(val)}
-            onPrioritySelect={(priority: string) => setPriority(priority)}
-            onUserSelect={() => { }}
+            onTitleChange={(val: string) => handleTask('title', val)}
+            onDescriptionChange={(val: string) => handleTask("description", val)}
+            onDueDateChange={(val: string) => handleTask("dueDate", val)}
+            onPrioritySelect={(priority: string) => handleTask("priority", priority)}
+            onUserSelect={() => { setOpenedModal("select_user") }}
             onSave={handleSave}
             onCancel={handleCancel}
-            titleValue={title}
-            descriptionValue={description}
-            dueDateValue={dueDate}
-            selectedPriority={priority}
+            titleValue={task.title}
+            descriptionValue={task.description}
+            dueDateValue={task.dueDate}
+            selectedPriority={task.priority}
+            selectedUser={task.selectedUser.name}
           />}
       </PopupModal>
     </ScrollView>

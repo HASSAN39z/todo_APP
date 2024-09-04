@@ -4,6 +4,7 @@ import { MyText, MyTextInput, MyButton, SmallBtn } from '@components';
 import { hp } from '@utils';
 
 interface TaskManagementProps {
+  selectedUser:string,
   onTitleChange: (val: string) => void;
   onDescriptionChange: (val: string) => void;
   onDueDateChange: (val: string) => void;
@@ -18,6 +19,7 @@ interface TaskManagementProps {
 }
 
 const TaskManagement: React.FC<TaskManagementProps> = ({
+  selectedUser,
   onTitleChange,
   onDescriptionChange,
   onDueDateChange,
@@ -31,7 +33,7 @@ const TaskManagement: React.FC<TaskManagementProps> = ({
   selectedPriority, // Added for controlling priority button styles
 }) => {
   return (
-    <View style={{ height: hp(80), width: "100%" }}>
+    <View style={{ maxHeight: hp(80), width: "100%" }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, width: "100%" }}>
         <View style={{ gap: 10 }}>
           <MyText color='white'>Title</MyText>
@@ -88,7 +90,7 @@ const TaskManagement: React.FC<TaskManagementProps> = ({
           <MyText p color='white'>Assign to user</MyText>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: 10 }}>
             <MyButton
-              title='Select User'
+              title={selectedUser?selectedUser:'Select User'}
               onPress={onUserSelect}
               btnType='primary'
               style={{ height: hp('5%'), flex: 1 }}
