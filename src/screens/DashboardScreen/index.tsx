@@ -4,14 +4,12 @@ import { MyButton, MyText, PopupModal, SmallBtn } from '@components'
 import { MY_COLORS } from '@constants'
 import { adjust } from '@utils'
 import { ConfirmationContent, Detail, FilterOptions, SelectUser, TaskCard, TaskManagement } from './components'
-import { createNewTask } from '@services'
+import { createNewTask, deleteTask } from '@services'
 import { useAuth } from '@context'
 import firestore from '@react-native-firebase/firestore';
 
 
 type TaskType = "title" | "description" | "dueDate" | "priority" | "selectedUser" | "status";
-
-
 const DashboardScreen = () => {
 
   const { currentUser } = useAuth()
@@ -23,7 +21,7 @@ const DashboardScreen = () => {
   const [selectedDate, setSelectedDate] = useState<'overdue' | 'upcoming'>('upcoming');
   const [task, setTask] = useState<any>(initialTaskData);
   const [allTasks, setAllTasks] = useState<any>([]);
-
+  const [openedTask, setOpenedTask] = useState(null);
 
   useEffect(() => {
     const unsubscribe = firestore()
@@ -58,10 +56,25 @@ const DashboardScreen = () => {
   const handleEdit = () => {
     setMode("editing")
   };
-  const handleDelete = () => { };
+  
+  const handleDelete = async () => {
+    if (openedTask) {
+      try {
+        await deleteTask(openedTask.id); // Call deleteTask with the ID of the task to delete
+        setAllTasks((prevTasks: any) => prevTasks.filter((task : any) => task.id !== openedTask.id)); // Update the state
+        setOpenedModal(false); // Close the modal
+      } catch (error) {
+        console.error('Failed to delete the task:', error);
+        // Optionally, show an error message to the user
+      }
+    }
+  };
+   
+
   const handleComplete = () => { };
+  
   const handleOpenTask = (taskData: any) => {
-    // {"assignTo": "23235435342", "createdAt": {"nanoseconds": 467000000, "seconds": 1725428757}, "createdBy": "071n4fdAiMPEyzB9cTNlwk2JKql2", "description": "Fayazfrd Faroq ", "dueDate": "15/15/45", "id": "", "priority": "Low", "selectedUser": {"name": "naeem", "uid": "23235435342"}, "status": "pending", "title": "Fayaz"}
+    setOpenedTask(taskData);
     console.log("taskData: ", taskData)
     setOpenedModal("detail")
   };
@@ -96,12 +109,12 @@ const DashboardScreen = () => {
       <MyButton onPress={() => { setMode('add_new'); setOpenedModal('task_management') }} title='New Task' style={{ width: "auto", alignSelf: 'flex-end', paddingHorizontal: 12 }} />
 
       {allTasks.length > 0 && allTasks.map((task: any,index:number): any => (
-        <TaskCard key={index} onPress={() => { handleOpenTask(task) }} title={task.title} subtitle={task.dueDate} priority={task.priority.toLowerCase()} isComplete={task.status === 'complete'} />
+        <TaskCard key={task.id} onPress={() => { handleOpenTask(task) }} title={task.title} subtitle={task.dueDate} priority={task.priority.toLowerCase()} isComplete={task.status === 'complete'} />
       ))}
 
       <PopupModal isVisible={!!openedModal} onClose={() => { setOpenedModal(false) }}>
         {openedModal == "confirmation" && <ConfirmationContent message='Are you sure to delete this task' onCancel={() => { setOpenedModal(false) }} onConfirm={() => { }} />}
-        {openedModal == "detail" && <Detail description={"description"} onComplete={() => { handleComplete() }} onDelete={() => { handleDelete() }} onEdit={() => { handleEdit() }} status='Pending' timestamp='Today At 16:45' title='Do Math Homework' />}
+        {openedModal === 'detail' && openedTask && (<Detail description={openedTask.description} onComplete={handleComplete} onDelete={handleDelete} onEdit={handleEdit} status={openedTask.status} timestamp={openedTask.dueDate} title={openedTask.title}/>)}
         {openedModal == "filter" && <FilterOptions onPrioritySelect={(val) => { setSelectedPriority(val) }} onDateSelect={(val) => { setSelectedDate(val) }} />}
         {openedModal == "select_user" && <SelectUser onUserSelect={(val) => { handleTask("selectedUser", val); setOpenedModal('task_management') }} />}
         {openedModal == "task_management" &&
