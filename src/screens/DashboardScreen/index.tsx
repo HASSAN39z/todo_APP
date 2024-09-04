@@ -148,7 +148,7 @@ const DashboardScreen = () => {
             onDescriptionChange={(val: string) => handleTask("description", val)}
             onDueDateChange={(val: string) => handleTask("dueDate", val)}
             onPrioritySelect={(priority: string) => handleTask("priority", priority)}
-            onUserSelect={() => { setOpenedModal("select_user") }}
+            onUserSelect={() => {setOpenedModal("select_user") }}
             onSave={handleSave}
             onCancel={handleCancel}
             titleValue={task.title}

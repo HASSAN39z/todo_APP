@@ -33,7 +33,7 @@ const UserSelector: React.FC<UserSelectorProps> = ({ onUserSelect }) => {
                     key={member.id}
                     title={member.memberName}
                     onPress={() => onUserSelect({ name: member.memberName, uid: member.memberId })}
-                    btnType='secondary'
+                    btnType='primary'
                     style={{ marginBottom: 10 }}
                 />
             ))}

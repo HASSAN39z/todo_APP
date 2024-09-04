@@ -24,7 +24,7 @@ const MyButton: React.FC<MyButtonProps> = ({
 }) => {
   const styles = myStyles(btnType, btnWidth);
   return (
-    <TouchableOpacity style={[styles.button, LAYOUT.SHADOW, style]} onPress={onPress}>
+    <TouchableOpacity style={[styles.button,  style]} onPress={onPress}>
       {iconPath && <Image source={iconPath} />}
       <MyText cp color={btnType === 'primary' ? 'black' : 'white'} bold>
         {title}

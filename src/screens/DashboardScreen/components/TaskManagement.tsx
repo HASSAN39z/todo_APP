@@ -10,7 +10,7 @@ interface TaskManagementProps {
   onDescriptionChange: (val: string) => void;
   onDueDateChange: (val: string) => void;
   onPrioritySelect: (priority: string) => void;
-  onUserSelect: (user: { name: string; uid: string }) => void;
+  onUserSelect: () => void;
   onSave: () => void;
   onCancel: () => void;
   titleValue: string;
@@ -35,13 +35,13 @@ const TaskManagement: React.FC<TaskManagementProps> = ({
 }) => {
   const [showUserSelector, setShowUserSelector] = useState(false);
 
-  const handleUserSelect = (user: { name: string; uid: string }) => {
-    onUserSelect(user);
-    setShowUserSelector(false);
-  };
-  console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  // const handleUserSelect = (user: { name: string; uid: string }) => {
+  //   onUserSelect(user);
+  //   setShowUserSelector(false);
+  // };
 
-  console.log(selectedUser);
+  console.log("=====cccccccc=======")
+  console.log(selectedUser?.name)
 
   return (
     <View style={{ maxHeight: hp(80), width: "100%" }}>
@@ -100,13 +100,12 @@ const TaskManagement: React.FC<TaskManagementProps> = ({
           <MyText p color='white'>Assign to user</MyText>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', gap: 10, }}>
             <MyButton
-              title={selectedUser ? selectedUser.name : 'Select User'}
-              onPress={() => setShowUserSelector(!showUserSelector)}
+              title={selectedUser?.name ? selectedUser.name : 'Select User'}
+              onPress={onUserSelect}
               btnType='secondary'
               style={{ height: hp('5%'), flex: 1 }}
             />
           </View>
-          {showUserSelector && <UserSelector onUserSelect={handleUserSelect} />}
         </View>
 
         <View style={{ gap: 12, flexDirection: 'row', alignItems: 'center' }}>
