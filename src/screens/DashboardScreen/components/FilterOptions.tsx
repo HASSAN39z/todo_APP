@@ -4,27 +4,20 @@ import { MyText, MyButton } from '@components'; // Adjust the import path based 
 import { hp } from '@utils'; // Adjust the import path based on your utility file
 
 interface FilterOptionsProps {
-    onPrioritySelect: (priority: 'low' | 'medium' | 'high') => void;
-    onDateSelect: (dateType: 'overdue' | 'upcoming') => void;
+    selectedPriority:any;
+    selectedDate:any;
+    onPrioritySelect: (priority: 'low' | 'medium' | 'high' | '') => void;
+    onDateSelect: (dateType: 'overdue' | 'upcoming' | 'today' | '') => void;
 }
 
-const FilterOptions: React.FC<FilterOptionsProps> = ({ onPrioritySelect, onDateSelect }) => {
-    const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>('low');
-    const [selectedDate, setSelectedDate] = useState<'overdue' | 'upcoming'>('upcoming');
+const FilterOptions: React.FC<FilterOptionsProps> = ({selectedPriority, selectedDate, onPrioritySelect, onDateSelect }) => {
 
-    useEffect(() => {
-        // Notify parent components of the default selections when the component mounts
-        onPrioritySelect(selectedPriority);
-        onDateSelect(selectedDate);
-    }, []);
 
-    const handlePrioritySelect = (priority: 'low' | 'medium' | 'high') => {
-        setSelectedPriority(priority);
+    const handlePrioritySelect = (priority: 'low' | 'medium' | 'high' | '') => {
         onPrioritySelect(priority);
     };
 
-    const handleDateSelect = (dateType: 'overdue' | 'upcoming') => {
-        setSelectedDate(dateType);
+    const handleDateSelect = (dateType: 'overdue' | 'upcoming' | 'today' | '') => {
         onDateSelect(dateType);
     };
 
@@ -51,6 +44,12 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({ onPrioritySelect, onDateS
                         btnType={selectedPriority === 'high' ? 'primary' : 'secondary'}
                         style={styles.button}
                     />
+                    <MyButton
+                        title='All'
+                        onPress={() => handlePrioritySelect('')}
+                        btnType={selectedPriority === '' ? 'primary' : 'secondary'}
+                        style={styles.button}
+                    />
                 </View>
             </View>
 
@@ -64,9 +63,21 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({ onPrioritySelect, onDateS
                         style={styles.button}
                     />
                     <MyButton
+                        title='Today'
+                        onPress={() => handleDateSelect('today')}
+                        btnType={selectedDate === 'today' ? 'primary' : 'secondary'}
+                        style={styles.button}
+                    />
+                    <MyButton
                         title='Upcoming'
                         onPress={() => handleDateSelect('upcoming')}
                         btnType={selectedDate === 'upcoming' ? 'primary' : 'secondary'}
+                        style={styles.button}
+                    />
+                    <MyButton
+                        title='All'
+                        onPress={() => handleDateSelect('')}
+                        btnType={selectedDate === '' ? 'primary' : 'secondary'}
                         style={styles.button}
                     />
                 </View>
@@ -86,7 +97,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        gap: 10,
+        gap: 6,
     },
     button: {
         height: hp('5%'),

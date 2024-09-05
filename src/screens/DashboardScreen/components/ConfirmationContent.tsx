@@ -1,15 +1,18 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { MyText, MyButton } from '@components'; // Adjust the import path based on your file structure
 import { hp } from '@utils'; // Adjust the import path based on your utility file
 
 interface ConfirmationContentProps {
+    loading: boolean;
     message: string;
     onConfirm: () => void;
     onCancel: () => void;
 }
 
-const ConfirmationContent: React.FC<ConfirmationContentProps> = ({ message, onConfirm, onCancel }) => {
+const ConfirmationContent: React.FC<ConfirmationContentProps> = ({ loading, message, onConfirm, onCancel }) => {
+
+    if (loading) return <ActivityIndicator size={32} color="white" />
     return (
         <View style={styles.container}>
             <MyText color='white' p>{message}</MyText>

@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MyText, SmallBtn } from '@components'; // Adjust the import path based on your file structure
 import { MY_COLORS } from '@constants'; // Adjust the import path based on your constants file
+import { useAuth } from '@context';
 
 interface DetailProps {
+    isComplete: boolean;
     title: string;
     status: 'Completed' | 'Pending' | string;
     timestamp: string;
@@ -13,7 +15,8 @@ interface DetailProps {
     onComplete: () => void;
 }
 
-const Detail: React.FC<DetailProps> = ({ title, status, timestamp, description, onEdit, onDelete, onComplete }) => {
+const Detail: React.FC<DetailProps> = ({ isComplete, title, status, timestamp, description, onEdit, onDelete, onComplete }) => {
+    const {isAdmin} = useAuth()
     return (
         <View style={styles.container}>
             <View>
@@ -27,9 +30,9 @@ const Detail: React.FC<DetailProps> = ({ title, status, timestamp, description, 
             <MyText color="white" cp>{description}</MyText>
 
             <View style={styles.buttonContainer}>
-                <SmallBtn title='Edit' onPress={onEdit} style={styles.button} />
-                <SmallBtn title='Delete' onPress={onDelete} style={styles.button} />
-                <SmallBtn title='Complete' onPress={onComplete} style={styles.button} />
+                {!isComplete && isAdmin && <SmallBtn title='Edit' onPress={onEdit} style={styles.button} />}
+                {isAdmin && <SmallBtn title='Delete' onPress={onDelete} style={styles.button} />}
+                {!isComplete && <SmallBtn title='Complete' onPress={onComplete} style={styles.button} />}
             </View>
 
             <View style={styles.separator} />

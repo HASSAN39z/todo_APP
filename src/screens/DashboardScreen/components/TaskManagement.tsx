@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, ScrollView } from 'react-native';
-import { MyText, MyTextInput, MyButton, SmallBtn } from '@components';
+import { MyText, MyTextInput, MyButton, SmallBtn, DatePickerInput } from '@components';
 import { hp } from '@utils';
 import UserSelector from './SelectUser';
 
@@ -66,10 +66,11 @@ const TaskManagement: React.FC<TaskManagementProps> = ({
 
         <View style={{ gap: 10 }}>
           <MyText color='white'>Due Date</MyText>
-          <MyTextInput
-            placeholder='Enter due date'
+          <DatePickerInput
+            // label="Due Date"
+            placeholder="Select due date"
             value={dueDateValue}
-            onChangeText={onDueDateChange}
+            onChangeText={(date) => onDueDateChange(date)}
           />
         </View>
 

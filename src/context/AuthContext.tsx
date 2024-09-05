@@ -14,6 +14,7 @@ interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
+  photoURL: string | null;
 }
 
 interface AuthContextType {
@@ -93,11 +94,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const addUserToFireStore = async (authUser: any) => {
     try {
-      const { uid, email, displayName } = authUser;
+      const { uid, email, displayName, photoURL } = authUser;
       await firestore().collection('users').doc(uid).set({
         uid,
         email,
         displayName,
+        photoURL,
         createdAt: new Date(),
       });
     } catch (error) {
