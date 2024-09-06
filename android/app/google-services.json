@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "305484718925",
+    "project_id": "todo-list-b2c2b",
+    "storage_bucket": "todo-list-b2c2b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305484718925:android:c43e2df3830e57bfe88d04",
+        "android_client_info": {
+          "package_name": "com.todo.list.mobile.app.naeem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "305484718925-umeuebrrfssmr6ujhhdjr887j0pj8t26.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcxdCVJ6PU9IC7ClYTiwrBlZjZ3_y1O28"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "305484718925-umeuebrrfssmr6ujhhdjr887j0pj8t26.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
